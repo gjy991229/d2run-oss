@@ -1,0 +1,28 @@
+[package]
+name = "d2run"
+version = "0.1.0"
+description = "A Tauri App"
+authors = ["you"]
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2.0.0", features = [] } # 保持你生成的版本号
+tauri-plugin-shell = "2.0.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+rdev = "0.5" # 核心：全局键盘钩子
+chrono = { version = "0.4", features = ["serde"] } # 处理时间
+uuid = { version = "1.0", features = ["v4", "serde"] } # 生成 ID
+open = "5"
+
+[profile.release]
+strip = true
+opt-level = "z"
+lto = true
+codegen-units = 1
+panic = "abort"
