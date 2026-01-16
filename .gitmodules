@@ -1,3 +1,0 @@
-[submodule "src/cloud/impl"]
-	path = src/cloud/impl
-	url = https://github.com/gjy991229/d2run-cloud-impl.git
