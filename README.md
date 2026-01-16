@@ -27,7 +27,16 @@ A lightweight, elegant desktop application for tracking your Diablo II speedruns
 - Windows 10 or later
 - ~100MB disk space
 
-### Installation
+### Download
+
+> **📦 Pre-built Release vs Source Build**
+> 
+> | Version | Cloud Sync | How to Get |
+> |---------|------------|------------|
+> | **Pre-built Release** | ✅ Included | Download from [Releases](https://github.com/lllxxxlll/d2run/releases) |
+> | **Build from Source** | ❌ Not included | Clone this repo and build yourself |
+> 
+> The pre-built release includes a proprietary cloud synchronization plugin for WeChat ecosystem integration. If you build from source, the app will work fully offline without cloud features.
 
 1. Download the latest release from [GitHub Releases](https://github.com/lllxxxlll/d2run/releases).
 2. Run the installer.
