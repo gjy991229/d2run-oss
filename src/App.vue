@@ -94,6 +94,7 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted } from 'vue';
 import { useRunStore } from './stores/runStore';
+import { ensureCloudReady } from './composables/data/useCloudSync';
 import { listen } from '@tauri-apps/api/event';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { invoke } from '@tauri-apps/api/core';
@@ -266,9 +267,13 @@ function handleKeyPress(
 
 // Lifecycle hooks
 onMounted(async () => {
-  // Load configuration and history on mount
+  // Load configuration on mount
   await store.loadConfig();
+  
+  // Ensure cloud service is initialized before checking login
+  await ensureCloudReady();
   store.checkCloudLogin();
+  
   await store.loadHistory();
   store.applyThemeToDOM();
   store.tryResize('HOME');

@@ -9,19 +9,41 @@
  * provides a safe no-op fallback to prevent crashes.
  */
 
-import { reactive, ref } from 'vue';
+import { reactive, ref, shallowRef } from 'vue';
 import type { AppConfig, HistoryFilter, RunRecord } from '../../shared/types';
 import type { CloudState } from '../../cloud/cloud.interface';
-import { initCloudService } from '../../cloud';
+import { initCloudService, cloudService } from '../../cloud';
 
-// Lazy-loaded implementation cache
-let useCloudSyncImpl: (() => ReturnType<typeof createFallbackInternal>) | null = null;
+// Define the return type interface
+type CloudSyncReturn = ReturnType<typeof createFallbackInternal>;
+export type UseCloudSyncReturn = CloudSyncReturn;
+
+// 1. SHARED STATE (Single Source of Truth)
+// Created once and shared between Fallback, Impl, and UI
+const sharedCloudState = reactive<CloudState>({
+    isLoggedIn: false,
+    isLoading: false,
+    isSyncing: false,
+    userInfo: null,
+    qrCodeUrl: ''
+});
+const sharedCloudRecords = ref<RunRecord[]>([]);
+const sharedSyncCooldownRemaining = ref(0);
+
+// Package state for passing to implementations
+const sharedStateBundle = {
+    cloudState: sharedCloudState,
+    cloudRecords: sharedCloudRecords,
+    syncCooldownRemaining: sharedSyncCooldownRemaining
+};
+
+// 2. ACTIVE IMPLEMENTATION
+// Holds the object that contains the actual method logic
+// Initialize with null activeImplementation, will be set to fallback in createFallbackInternal
+const activeImplementation = shallowRef<any>(null);
+
 let initPromise: Promise<void> | null = null;
 let initialized = false;
-
-// Singleton instances to ensure state is shared across all useCloudSync() calls
-let cachedImplInstance: ReturnType<typeof createFallbackInternal> | null = null;
-let cachedFallbackInstance: ReturnType<typeof createFallbackInternal> | null = null;
 
 /**
  * Initialize cloud service lazily (called on first use)
@@ -30,17 +52,30 @@ async function ensureInitialized(): Promise<void> {
     if (initialized) return;
     if (initPromise) return initPromise;
 
+    // Set initial fallback if not set
+    if (!activeImplementation.value) {
+        activeImplementation.value = createFallbackInternal();
+    }
+
     initPromise = (async () => {
         try {
             // Initialize cloud service first (loads impl or falls back to stub)
             await initCloudService();
             // @ts-ignore - dynamic import for optional module
             const module = await import('../../cloud/impl/useCloudSync');
-            useCloudSyncImpl = module.useCloudSyncImpl;
+
+            // Load and instantiate the implementation, PASSING SHARED STATE
+            // This is the critical fix: Impl will use our existing reactive objects
+            const implInstance = module.useCloudSyncImpl(sharedStateBundle);
+
+            // Switch active implementation
+            console.log('[Cloud Facade] Swapping to implementation instance with shared state');
+            activeImplementation.value = implInstance;
+
             console.debug('[Cloud] Implementation loaded successfully.');
-        } catch {
+        } catch (e) {
             // Impl module missing - expected for offline builds
-            console.debug('[Cloud] Private implementation not found, using fallback.');
+            console.debug('[Cloud] Private implementation not found, staying with fallback.', e);
         }
         initialized = true;
     })();
@@ -52,22 +87,11 @@ async function ensureInitialized(): Promise<void> {
  * Create fallback implementation for open-source builds (internal)
  */
 function createFallbackInternal() {
-    const cloudState = reactive<CloudState>({
-        isLoggedIn: false,
-        isLoading: false,
-        isSyncing: false,
-        userInfo: null,
-        qrCodeUrl: ''
-    });
-
-    const cloudRecords = ref<RunRecord[]>([]);
-    const syncCooldownRemaining = ref(0);
-
     return {
-        // State
-        cloudState,
-        cloudRecords,
-        syncCooldownRemaining,
+        // State (not used directly via methods, but kept for structural compatibility)
+        cloudState: sharedCloudState,
+        cloudRecords: sharedCloudRecords,
+        syncCooldownRemaining: sharedSyncCooldownRemaining,
 
         // Methods (No-ops)
         calcCooldown: (_config: AppConfig | null) => { },
@@ -83,38 +107,41 @@ function createFallbackInternal() {
             _t: (key: string) => string,
             _onSuccess: () => Promise<void>
         ) => { },
-        isCloudEnabled: () => false,
+        // Delegate to cloudService to correctly detect after async init
+        isCloudEnabled: () => cloudService.isEnabled(),
         getCloudRecords: async (_filter: HistoryFilter) => [] as RunRecord[]
     };
 }
 
-/** Return type for useCloudSync composable */
-export type UseCloudSyncReturn = ReturnType<typeof createFallbackInternal>;
-
-// Trigger initialization early but don't block
+// Trigger initialization early
+if (!activeImplementation.value) {
+    activeImplementation.value = createFallbackInternal();
+}
 ensureInitialized();
 
 /**
- * Get or create singleton instance
+ * Main Composable - Returns shared state + proxied methods
  */
-function getOrCreateInstance(): UseCloudSyncReturn {
-    // If impl was loaded, use cached impl instance
-    if (useCloudSyncImpl) {
-        if (!cachedImplInstance) {
-            cachedImplInstance = useCloudSyncImpl();
-        }
-        return cachedImplInstance;
-    }
+export function useCloudSync(): CloudSyncReturn {
+    // Return a stable object
+    // State properties -> Return the SHARED reactive objects directly (stable references)
+    // Methods -> Proxy to activeImplementation.value (dynamic execution)
+    return {
+        // State is STABLE and SHARED = Reactivity works guaranteed
+        cloudState: sharedCloudState,
+        cloudRecords: sharedCloudRecords,
+        syncCooldownRemaining: sharedSyncCooldownRemaining,
 
-    // Return cached fallback (create if needed)
-    if (!cachedFallbackInstance) {
-        cachedFallbackInstance = createFallbackInternal();
-    }
-    return cachedFallbackInstance;
-}
-
-export function useCloudSync(): UseCloudSyncReturn {
-    return getOrCreateInstance();
+        // Methods forward to the current implementation
+        calcCooldown: (...args) => activeImplementation.value!.calcCooldown(...args),
+        clearAuthFlow: (...args) => activeImplementation.value!.clearAuthFlow(...args),
+        checkCloudLogin: (...args) => activeImplementation.value!.checkCloudLogin(...args),
+        startCloudLogin: (...args) => activeImplementation.value!.startCloudLogin(...args),
+        logoutCloud: (...args) => activeImplementation.value!.logoutCloud(...args),
+        syncData: (...args) => activeImplementation.value!.syncData(...args),
+        isCloudEnabled: () => activeImplementation.value!.isCloudEnabled(),
+        getCloudRecords: (...args) => activeImplementation.value!.getCloudRecords(...args)
+    };
 }
 
 /**

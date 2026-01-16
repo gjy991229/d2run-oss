@@ -272,19 +272,20 @@ export const useRunStore = defineStore('run', () => {
     goBack,
     openDashboard: dashboardComposable.openDashboard,
 
-    // Cloud
-    cloudState: cloudSyncComposable.cloudState,
-    cloudRecords: cloudSyncComposable.cloudRecords,
-    syncCooldownRemaining: cloudSyncComposable.syncCooldownRemaining,
-    isCloudEnabled: cloudSyncComposable.isCloudEnabled,
-    startCloudLogin: () => cloudSyncComposable.startCloudLogin(configComposable.config, i18n.t),
-    logoutCloud: () => cloudSyncComposable.logoutCloud(configComposable.config, i18n.t),
-    syncData: () => cloudSyncComposable.syncData(configComposable.config, historyComposable.historyFilter, i18n.t, async () => {
+    // Cloud - Use dynamic calls to get the correct instance after initialization
+    // Use getters to ensure we always access the current instance's state
+    get cloudState() { return useCloudSync().cloudState; },
+    get cloudRecords() { return useCloudSync().cloudRecords; },
+    get syncCooldownRemaining() { return useCloudSync().syncCooldownRemaining; },
+    isCloudEnabled: () => useCloudSync().isCloudEnabled(),
+    startCloudLogin: () => useCloudSync().startCloudLogin(configComposable.config, i18n.t),
+    logoutCloud: () => useCloudSync().logoutCloud(configComposable.config, i18n.t),
+    syncData: () => useCloudSync().syncData(configComposable.config, historyComposable.historyFilter, i18n.t, async () => {
       historyComposable.clearLocalRecords();
       await historyComposable.loadHistory();
     }),
-    checkCloudLogin: () => cloudSyncComposable.checkCloudLogin(configComposable.config.value),
-    clearAuthFlow: cloudSyncComposable.clearAuthFlow,
+    checkCloudLogin: () => useCloudSync().checkCloudLogin(configComposable.config.value),
+    clearAuthFlow: () => useCloudSync().clearAuthFlow(),
     calcCooldown,
 
     // Helpers
