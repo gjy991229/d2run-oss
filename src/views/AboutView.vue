@@ -53,7 +53,7 @@
               class="text-xs pl-2 opacity-80 hover:opacity-100 transition-opacity text-left break-all"
               :style="{ color: 'var(--theme-info)' }"
             >
-              github.com/gjy991229/d2run
+              github.com/gjy991229/d2run-oss
             </button>
           </div>
 
@@ -223,7 +223,7 @@ function handleQRClose() {
  */
 function openGitHub() {
   invoke('open_github').catch(() => {
-    window.open('https://github.com/gjy991229/d2run', '_blank');
+    window.open('https://github.com/gjy991229/d2run-oss', '_blank');
   });
 }
 </script>
