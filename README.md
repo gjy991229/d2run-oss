@@ -6,15 +6,15 @@ A lightweight, elegant desktop application for tracking your Diablo II speedruns
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Version](https://img.shields.io/badge/version-0.1.0-green.svg)
-![CI](https://github.com/lllxxxlll/d2run/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/gjy991229/d2run-oss/actions/workflows/ci.yml/badge.svg)
 
-## ✨ Features
+## �?Features
 
 - **⏱️ Real-time Timer**: Precise sub-second timing for your D2 runs.
 - **💎 Drop Recording**: Quickly record items and runes as they drop during gameplay.
 - **🌍 Multi-Language Support**: Fully localized in English and Simplified Chinese.
 - **📊 Session Statistics**: Track best time, average time, total drops, and more.
-- **🗺️ Scene-based Tracking**: Dedicated support for all Diablo II scenes with Terror Zone detection.
+- **🗺�?Scene-based Tracking**: Dedicated support for all Diablo II scenes with Terror Zone detection.
 - **⌨️ Customizable Shortcuts**: Full keyboard customization for hands-free operation.
 - **💾 Local Data Persistence**: All run data stored locally for privacy and speed.
 - **🔥 Terror Zone Support**: Dedicated tracking for Terror Zone runs.
@@ -33,12 +33,12 @@ A lightweight, elegant desktop application for tracking your Diablo II speedruns
 > 
 > | Version | Cloud Sync | How to Get |
 > |---------|------------|------------|
-> | **Pre-built Release** | ✅ Included | Download from [Releases](https://github.com/lllxxxlll/d2run/releases) |
-> | **Build from Source** | ❌ Not included | Clone this repo and build yourself |
+> | **Pre-built Release** | �?Included | Download from [Releases](https://github.com/gjy991229/d2run-oss/releases) |
+> | **Build from Source** | �?Not included | Clone this repo and build yourself |
 > 
 > The pre-built release includes a proprietary cloud synchronization plugin for WeChat ecosystem integration. If you build from source, the app will work fully offline without cloud features.
 
-1. Download the latest release from [GitHub Releases](https://github.com/lllxxxlll/d2run/releases).
+1. Download the latest release from [GitHub Releases](https://github.com/gjy991229/d2run-oss/releases).
 2. Run the installer.
 3. Launch D2Run Lite from your Start Menu or desktop shortcut.
 
@@ -102,7 +102,7 @@ Developers can implement their own cloud synchronization backends (e.g., Firebas
 export const cloudService = new MyCustomCloudService();
 ```
 
-## 🛠️ Development
+## 🛠�?Development
 
 ### Setup
 
@@ -123,18 +123,18 @@ npm run build
 src/
 ├── components/         # Vue components
 ├── stores/             # Pinia state management
-│   └── runStore.ts     # Main application state
+�?  └── runStore.ts     # Main application state
 ├── shared/             # Shared utilities and data
-│   ├── data.ts         # Item and scene definitions
-│   ├── types.ts        # TypeScript interfaces
-│   └── converter.ts    # Data conversion utilities
+�?  ├── data.ts         # Item and scene definitions
+�?  ├── types.ts        # TypeScript interfaces
+�?  └── converter.ts    # Data conversion utilities
 ├── assets/             # Styles and static assets
-│   └── main.css        # Global styles and components
+�?  └── main.css        # Global styles and components
 └── App.vue             # Main application component
 
 src-tauri/              # Rust backend
 ├── src/
-│   └── main.rs         # Tauri window and command handlers
+�?  └── main.rs         # Tauri window and command handlers
 └── tauri.conf.json     # Tauri configuration
 ```
 
@@ -162,14 +162,14 @@ Settings are stored in `%APPDATA%/d2run/` on Windows:
 
 Contributions are welcome! Please see our [Contributing Guide](CONTRIBUTING.md) for details on how to submit pull requests, report issues, and set up your development environment.
 
-## 👨‍💻 Author
+## 👨‍�?Author
 
 **lllxxxlll**
 
 - QQ: 980102315
-- GitHub: [@lllxxxlll](https://github.com/lllxxxlll)
+- GitHub: [@gjy991229](https://github.com/gjy991229)
 
-## ☕ Support
+## �?Support
 
 If you enjoy D2Run Lite and want to support its development, consider:
 
